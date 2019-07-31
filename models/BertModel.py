@@ -55,10 +55,8 @@ class BertLeoModel(nn.Module):
         super(BertLeoModel, self).__init__()
         self.context_encoder = BertModel.from_pretrained('bert-base-uncased')
         self.candidate_encoder = BertModel.from_pretrained('bert-base-uncased')
-        self.dropout = nn.Dropout(config.dropout_ratio)
         self.hidden_size = self.context_encoder.config.hidden_size
-        self.classifier = nn.Linear(self.hidden_size, 1)
-        self.hidden = nn.Bilinear(self.hidden_size, self.hidden_size, 1)
+        self.bilinear = nn.Bilinear(self.hidden_size, self.hidden_size, config.bilinear_size)
 
     def forward_with_input_embeddings(self, model, input_embeddings, attention_mask):
         extended_attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
@@ -75,7 +73,7 @@ class BertLeoModel(nn.Module):
         encoded_layers = model.encoder(input_embeddings, extended_attention_mask, head_mask)
 
         sequence_output = encoded_layers[-1]
-        pooled_output = self.dropout(self.context_encoder.pooler(sequence_output))
+        pooled_output = self.context_encoder.dropout(self.context_encoder.pooler(sequence_output))
         return pooled_output
 
     def forward(self, contexts_txt, candidate_txt, prediction_positions, pad_idx):
@@ -112,4 +110,4 @@ class BertLeoModel(nn.Module):
 
         context_encodings = context_encodings.view(bsz, csz, hsz)
         # pdb.set_trace()
-        return self.hidden(context_encodings, candidate_encodings).squeeze(-1) # bsz, csz
+        return calc_bilinear(self.bilinear, context_encodings, candidate_encodings)

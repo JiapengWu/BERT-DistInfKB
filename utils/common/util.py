@@ -29,27 +29,6 @@ def calc_bilinear(hidden, h, t):
         return torch.sum(hidden(h, t), dim=-1)
 
 
-def bert_tokenization(x):
-    return tokenizer.tokenize(x.replace('<TO_BE_PREDICTED>', '[MASK]'))
-
-def normalizeString(s):
-    s = re.sub(r"[^A-Za-z0-9(),!?\'\"-:]", " ", s)
-    s = re.sub(r"\'s", " \'s", s)
-    s = re.sub(r"\'ve", " \'ve", s)
-    s = re.sub(r"n\'t", " n\'t", s)
-    s = re.sub(r"\'re", " \'re", s)
-    s = re.sub(r"\'d", " \'d", s)
-    s = re.sub(r"\'ll", " \'ll", s)
-    s = re.sub(r",", " , ", s)
-    s = re.sub(r"!", " ! ", s)
-    s = re.sub(r"\(", " \( ", s)
-    s = re.sub(r"\)", " \) ", s)
-    s = re.sub(r"\?", " \? ", s)
-    s = re.sub(r"\s{2,}", " ", s)
-    s = s.strip()
-    return s
-
-
 def init_variables(args):
 
     ent_and_rels = EntitiesAndRelations(args,
@@ -66,8 +45,6 @@ def init_variables(args):
                 post_arr.append(ent_and_rels.mid2idx.get(x, ent_and_rels.unk_idx))
             post_batch.append(post_arr)
         return post_batch
-
-    tokenizer.never_split=['<blank>']
 
     CONTEXT_FIELD = Field(include_lengths=True, batch_first=True, fix_length=args.input_fixed_length, postprocessing=bert_post_processing,
                           pad_token='[PAD]', init_token='[CLS]', use_vocab=False)

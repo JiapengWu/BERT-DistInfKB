@@ -161,4 +161,3 @@ def get_entity_description_indices(config, ent_and_rels, vocab=None):
 
         torch.save(ent_desc_idx, ent_inits_path)
     return ent_desc_idx
-
